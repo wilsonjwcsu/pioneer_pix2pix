@@ -331,6 +331,7 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
         ####################### Training init ####################### 
 
         z = Variable( torch.FloatTensor(batch_size(reso), args.nz, 1, 1) ).cuda(async=(args.gpu_count>1))
+        print(z.shape)
         KL_minimizer = KLN01Loss(direction=args.KL, minimize=True)
         KL_maximizer = KLN01Loss(direction=args.KL, minimize=False)
         
@@ -382,7 +383,7 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
 
                 stats['real_mean'] = KL_minimizer.samples_mean.data.mean()
                 stats['real_var'] = KL_minimizer.samples_var.data.mean()
-                stats['KL_real'] = KL_real.data[0]
+                stats['KL_real'] = KL_real.data.item()
                 kls = "{0:.3f}".format(stats['KL_real'])
 
             # The final entries are the label. Normal case, just 1. Extract it/them, and make it [b x 1]:
@@ -393,7 +394,7 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
                 # match_x: E_x||g(e(x)) - x|| -> min_e
                 err = utils.mismatch(recon_x, x, args.match_x_metric) * match_x
                 e_losses.append(err)
-                stats['x_reconstruction_error'] = err.data[0]
+                stats['x_reconstruction_error'] = err.item()
 
             args.use_wpgan_grad_penalty = False
             grad_penalty = 0.0
@@ -401,6 +402,7 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
             if args.use_loss_fake_D_KL:
                 # TODO: The following codeblock is essentially the same as the KL_minimizer part on G side. Unify
                 utils.populate_z(z, args.nz+args.n_label, args.noise, batch_size(reso))
+                z = torch.squeeze(z)
                 z, label = utils.split_labels_out_of_latent(z)
                 fake = generator(z, label, session.phase, session.alpha).detach()
 
@@ -416,7 +418,7 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
 
                 stats['fake_mean'] = KL_maximizer.samples_mean.data.mean()
                 stats['fake_var'] = KL_maximizer.samples_var.data.mean()
-                stats['KL_fake'] = -KL_fake.data[0]
+                stats['KL_fake'] = -KL_fake.item()
                 kls = "{0}/{1:.3f}".format(kls, stats['KL_fake'])
 
                 if args.use_wpgan_grad_penalty:
@@ -425,7 +427,7 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
             # Update e
             if len(e_losses) > 0:
                 e_loss = sum(e_losses)                
-                stats['E_loss'] = np.float32(e_loss.data)
+                stats['E_loss'] = np.float32(e_loss.cpu().detach().numpy())
                 e_loss.backward()
 
                 if args.use_wpgan_grad_penalty:
@@ -433,7 +435,7 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
                     stats['Grad_penalty'] = grad_penalty.data
 
                 #book-keeping
-                disc_loss_val = e_loss.data[0]
+                disc_loss_val = e_loss.item()
 
         session.optimizerD.step()
 
@@ -467,7 +469,7 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
 
                     if args.use_loss_KL_z:
                         g_losses.append(kl) # G minimizes this KL
-                        stats['KL(Phi(G))'] = kl.data[0]
+                        stats['KL(Phi(G))'] = kl.item()
                         kls = "{0}/{1:.3f}".format(kls, stats['KL(Phi(G))'])
 
                     if args.use_loss_z_reco:
@@ -477,11 +479,11 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
 
                 if len(g_losses) > 0:
                     loss = sum(g_losses)
-                    stats['G_loss'] = np.float32(loss.data)
+                    stats['G_loss'] = np.float32(loss.cpu().detach().numpy())
                     loss.backward()
 
                     # Book-keeping only:
-                    gen_loss_val = loss.data[0]
+                    gen_loss_val = loss.item()
                 
                 session.optimizerG.step()
 
@@ -489,7 +491,7 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
 
                 if train_mode == config.MODE_CYCLIC:
                     if args.use_loss_z_reco:
-                        stats['z_reconstruction_error'] = z_diff.data[0]
+                        stats['z_reconstruction_error'] = z_diff.item()
 
             accumulate(g_running, generator)
 

@@ -52,6 +52,8 @@ def get_loader(datasetName, path):
         loader = Utils.cifar10_loader(path)
     elif datasetName == 'celebaHQ':
         loader = CelebAHQ(path) # Expects the path that has the .h5 file
+    elif datasetName == 'custom':
+        loader = Utils.custom_loader(path)
 
     return loader
 
@@ -89,6 +91,14 @@ class Utils:
                                     num_workers=2, pin_memory=(args.gpu_count>1))
             return data_loader
 
+        return loader
+
+    def custom_loader(path):
+        def loader(transform, batch_size):
+            data = datasets.ImageFolder(root=path,transform=transform)
+            data_loader = DataLoader(data, shuffle=True, batch_size=batch_size,
+                                     num_workers=2, pin_memory=(args.gpu_count>1))
+            return data_loader
         return loader
 
     maybeRandomHorizontalFlip = transforms.RandomHorizontalFlip() if args.sample_mirroring else transforms.Lambda(lambda x: x)
@@ -187,6 +197,16 @@ class Utils:
                 transforms.ToTensor(),
             ])
         elif args.data == 'cifar10': # No center crop, no horizontal flipping
+            transform_with_resize_norm = transforms.Compose([
+                transforms.Resize(image_size),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            ])
+            transform_with_resize = transforms.Compose([
+                transforms.Resize(image_size),
+                transforms.ToTensor(),
+            ])
+        elif args.data == 'custom': # No center crop, no horizontal flipping
             transform_with_resize_norm = transforms.Compose([
                 transforms.Resize(image_size),
                 transforms.ToTensor(),

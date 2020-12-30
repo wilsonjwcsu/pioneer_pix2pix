@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument('--step_offset', type=int, default=0, help='Use the reloaded model but ignore the given number of steps (use -1 for all steps)')
 
     parser.add_argument('-d', '--data', default='celeba', type=str,
-                        choices=['celeba', 'lsun', 'cifar10', 'celebaHQ'],
+                        choices=['celeba', 'lsun', 'cifar10', 'celebaHQ', 'custom'],
                         help=('Specify dataset. '
                             'Currently celeba, lsun and cifar10 are supported'))
     parser.add_argument('--KL', default='qp', help='The KL divergence direction [pq|qp]')

@@ -33,7 +33,10 @@ def populate_z(z, nz, noise, batch_size):
     '''
     Fills noise variable `z` with noise U(S^M) [from https://github.com/DmitryUlyanov/AGE ]
     '''
-    z.data.resize_(batch_size, nz) #, 1, 1)
+    with torch.no_grad():
+        z.resize_(batch_size, nz) #, 1, 1)
+    #z.reshape(batch_size,nz)
+    z = torch.squeeze(z)
     z.data.normal_(0, 1)
     if noise == 'sphere':
         normalize_(z.data)
