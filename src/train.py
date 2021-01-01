@@ -331,7 +331,6 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
         ####################### Training init ####################### 
 
         z = Variable( torch.FloatTensor(batch_size(reso), args.nz, 1, 1) ).cuda(async=(args.gpu_count>1))
-        print(z.shape)
         KL_minimizer = KLN01Loss(direction=args.KL, minimize=True)
         KL_maximizer = KLN01Loss(direction=args.KL, minimize=False)
         

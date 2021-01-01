@@ -74,7 +74,8 @@ class Utils:
     @staticmethod
     def celeba_loader(path):
         def loader(transform, batch_size):
-            data = datasets.ImageFolder(path, transform=transform)
+            #data = datasets.ImageFolder(path, transform=transform)
+            data = datasets.CelebA(root=path, download=True, transform=transform)
             data_loader = DataLoader(data, shuffle=True, batch_size=batch_size,
                                     num_workers=4, drop_last=True, pin_memory=(args.gpu_count>1))
 
@@ -135,6 +136,12 @@ class Utils:
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
             ])
         elif args.data == 'cifar10': # No center crop, no horizontal flipping
+            transform_with_resize = transforms.Compose([
+                transforms.Resize(image_size),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            ])
+        elif args.data == 'custom': # No center crop, no horizontal flipping
             transform_with_resize = transforms.Compose([
                 transforms.Resize(image_size),
                 transforms.ToTensor(),

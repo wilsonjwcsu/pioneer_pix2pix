@@ -248,7 +248,7 @@ class Utils:
         delta_z_ver0 = ((z0[2] - z0[0]) / (latent_reso_ver - 1))
         delta_z_verN = ((z0[3] - z0[1]) / (latent_reso_ver - 1))
         for y_i in range(latent_reso_ver):
-            if False: #Linear interpolation
+            if True: #Linear interpolation
                 z0_x0 = z0[0] + y_i * delta_z_ver0
                 z0_xN = z0[1] + y_i * delta_z_verN
                 delta_z_hor = (z0_xN - z0_x0) / (latent_reso_hor - 1)
@@ -257,11 +257,11 @@ class Utils:
                 for x_i in range(latent_reso_hor):
                     z0_x[x_i] = z0_x0 + x_i * delta_z_hor
 
-            if True: #Spherical
+            if False: #Spherical
                 t_y = float(y_i) / (latent_reso_ver-1)
                 #z0_y = Variable(torch.FloatTensor(latent_reso_ver, z0.size(0)))
-                z0_y1 = Utils.slerp(z0[0].data, z0[2].data, t_y)
-                z0_y2 = Utils.slerp(z0[1].data, z0[3].data, t_y)
+                z0_y1 = Utils.slerp(z0[0].data.cpu().numpy(), z0[2].data.cpu().numpy(), t_y)
+                z0_y2 = Utils.slerp(z0[1].data.cpu().numpy(), z0[3].data.cpu().numpy(), t_y)
                 z0_x = Variable(torch.FloatTensor(latent_reso_hor, z0[0].size(0)))
                 for x_i in range(latent_reso_hor):
                     t_x = float(x_i) / (latent_reso_hor-1)

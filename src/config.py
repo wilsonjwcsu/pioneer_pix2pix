@@ -132,7 +132,8 @@ def init():
 
     args.h5 = (args.data == 'celebaHQ')
 
-    args.gpu_count = torch.cuda.device_count() # Set to 1 manually if don't want multi-GPU support
+    #args.gpu_count = torch.cuda.device_count() # Set to 1 manually if don't want multi-GPU support
+    args.gpu_count = 1
 
     print(args)
 
