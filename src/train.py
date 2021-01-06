@@ -200,7 +200,7 @@ def D_prediction_of_G_output(generator, encoder, step, alpha):
     #                    torch.multinomial(
     #                        torch.ones(args.n_label), args.batch_size, replacement=True)).cuda()
 
-    myz = Variable(torch.randn(batch_size_by_phase(step), args.nz)).cuda(async=(args.gpu_count>1))
+    myz = Variable(torch.randn(batch_size_by_phase(step), args.nz)).cuda(non_blocking=(args.gpu_count>1))
     myz = utils.normalize(myz)
     myz, label = utils.split_labels_out_of_latent(myz)
 
@@ -330,13 +330,13 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
 
         ####################### Training init ####################### 
 
-        z = Variable( torch.FloatTensor(batch_size(reso), args.nz, 1, 1) ).cuda(async=(args.gpu_count>1))
+        z = Variable( torch.FloatTensor(batch_size(reso), args.nz, 1, 1) ).cuda(non_blocking=(args.gpu_count>1))
         KL_minimizer = KLN01Loss(direction=args.KL, minimize=True)
         KL_maximizer = KLN01Loss(direction=args.KL, minimize=False)
         
         stats = {}
 
-        one = torch.FloatTensor([1]).cuda(async=(args.gpu_count>1))
+        one = torch.FloatTensor([1]).cuda(non_blocking=(args.gpu_count>1))
 
         try:
             real_image, _ = next(train_dataset)              
@@ -349,7 +349,7 @@ def train(generator, encoder, g_running, train_data_loader, test_data_loader, se
         utils.switch_grad_updates_to_first_of(encoder, generator)
         encoder.zero_grad()
 
-        x = Variable(real_image).cuda(async=(args.gpu_count>1))
+        x = Variable(real_image).cuda(non_blocking=(args.gpu_count>1))
         kls = ""
         if train_mode == config.MODE_GAN:
             
